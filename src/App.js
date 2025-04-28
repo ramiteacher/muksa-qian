@@ -9,7 +9,7 @@ import SocketContext from './contexts/SocketContext';
 import './styles/App.css';
 
 // 백엔드 서버 URL
-const BACKEND_URL = 'https://food-chain-game.onrender.com';
+const BACKEND_URL = 'https://muksa.onrender.com';
 
 const App = () => {
   const [socket, setSocket] = useState(null);

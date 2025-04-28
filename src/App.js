@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom'; // ✅ BrowserRouter 삭제
 import { io } from 'socket.io-client';
 import HomePage from './components/HomePage';
 import GameLobby from './components/GameLobby';
@@ -27,7 +27,6 @@ const App = () => {
   });
 
   useEffect(() => {
-    // 소켓 연결 설정
     const socketConnection = io(BACKEND_URL, {
       withCredentials: true,
       transports: ['websocket'],
@@ -36,7 +35,6 @@ const App = () => {
       reconnectionDelay: 1000
     });
 
-    // 소켓 이벤트 리스너 설정
     socketConnection.on('connect', () => {
       console.log('소켓 서버에 연결되었습니다.');
       setGameState(prev => ({
@@ -58,10 +56,8 @@ const App = () => {
       }));
     });
 
-    // 소켓 객체 저장
     setSocket(socketConnection);
 
-    // 컴포넌트 언마운트 시 소켓 연결 해제
     return () => {
       if (socketConnection) {
         console.log('소켓 연결을 해제합니다.');
@@ -73,15 +69,14 @@ const App = () => {
   return (
     <SocketContext.Provider value={{ socket, setSocket }}>
       <GameContext.Provider value={{ gameState, setGameState }}>
-        <Router>
-          <div className="app-container">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/lobby" element={<GameLobby />} />
-              <Route path="/game/:gameId" element={<GameRoom />} />
-            </Routes>
-          </div>
-        </Router>
+        {/* Router 없앰 */}
+        <div className="app-container">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/lobby" element={<GameLobby />} />
+            <Route path="/game/:gameId" element={<GameRoom />} />
+          </Routes>
+        </div>
       </GameContext.Provider>
     </SocketContext.Provider>
   );

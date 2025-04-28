@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const BACKEND_URL = 'https://food-chain-game.onrender.com';
+const BACKEND_URL = 'https://muksa.onrender.com';
 
 // 게임 소켓 이벤트 관리 서비스
 class GameSocketService {

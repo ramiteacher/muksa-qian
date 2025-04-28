@@ -1,6 +1,8 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GameContext from '../contexts/GameContext';
+
+
 import '../styles/HomePage.css';
 
 const HomePage = () => {
@@ -22,6 +24,7 @@ const HomePage = () => {
       navigate('/lobby');
     }
   };
+  
 
   return (
     <div className="home-container">

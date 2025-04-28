@@ -1,139 +1,143 @@
 import { io } from 'socket.io-client';
 
-const BACKEND_URL = 'https://muksa.onrender.com';  // 이거 그대로
+
+const BACKEND_URL = 'https://muksa-qian.onrender.com'; // 네 서버 URL 그대로 유지
 
 class GameSocketService {
   constructor(socket) {
     if (!socket) {
       this.socket = io(BACKEND_URL, {
-        transports: ['websocket'],  // ✅ 여기 심플하게
+        transports: ['websocket'],  // 웹소켓 강제
+        withCredentials: true,      // 크로스 도메인 지원
+        autoConnect: true           // 자동 연결
       });
-      console.log('새 소켓 연결을 생성했습니다.');
+      console.log('새 소켓 연결 생성');
     } else {
       this.socket = socket;
-      console.log('기존 소켓 연결을 사용합니다.');
+      console.log('기존 소켓 연결 사용');
     }
 
     this.eventHandlers = new Map();
-    
+
+    // 기본 연결 이벤트 등록
     this.socket.on('connect', () => {
-      console.log('소켓 서버에 연결되었습니다. ID:', this.socket.id);
+      console.log('[소켓 연결 성공] ID:', this.socket.id);
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('소켓 연결 오류:', error);
+      console.error('[소켓 연결 오류]', error);
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('소켓 연결이 끊어졌습니다:', reason);
+      console.log('[소켓 연결 끊김]', reason);
     });
   }
 
-  
-  // 로비 입장
+  // ✅ 서버로 "로비 입장" 요청 보내기
   enterLobby(playerName, callback) {
-    console.log('로비 입장 요청:', playerName);
-    this.socket.emit('enterLobby', playerName);
+    console.log('[로비 입장 요청]', playerName);
+    this.socket.emit('enterLobby', { playerName });
     this.registerHandler('gamesList', callback);
   }
 
-  // 게임 생성
+  // ✅ 서버로 "게임 생성" 요청 보내기
   createGame(gameName, callback) {
-    console.log('게임 생성 요청:', gameName);
-    this.socket.emit('createGame', gameName);
+    console.log('[게임 생성 요청]', gameName);
+    this.socket.emit('createGame', { gameName });
     this.registerHandler('gameCreated', callback);
   }
 
-  // 게임 참가
+  // ✅ 서버로 "게임 참가" 요청 보내기
   joinGame(gameId, playerName, callback) {
-    console.log('게임 참가 요청:', gameId, playerName);
+    console.log('[게임 참가 요청]', gameId, playerName);
     this.socket.emit('joinGame', { gameId, playerName });
     this.registerHandler('gameJoined', callback);
   }
 
-  // 준비 상태 변경
-  toggleReady() {
-    console.log('준비 상태 변경 요청');
+  // ✅ 준비 상태 변경
+  toggleReady(callback) {
+    console.log('[준비 상태 토글]');
     this.socket.emit('toggleReady');
+    if (callback) this.registerHandler('readyToggled', callback);
   }
 
-  // 게임 시작
+  // ✅ 게임 시작 요청
   startGame(gameId, callback) {
-    console.log('게임 시작 요청:', gameId);
-    this.socket.emit('startGame', gameId);
+    console.log('[게임 시작 요청]', gameId);
+    this.socket.emit('startGame', { gameId });
     this.registerHandler('gameStarted', callback);
   }
 
-  // 행동 제출
+  // ✅ 플레이어 행동 제출
   submitAction(action, callback) {
-    console.log('행동 제출 요청:', action);
+    console.log('[행동 제출]', action);
     this.socket.emit('submitAction', action);
     this.registerHandler('actionConfirmed', callback);
   }
 
-  // 메시지 전송
+  // ✅ 채팅 메시지 전송
   sendMessage(gameId, content) {
-    console.log('메시지 전송 요청:', gameId, content);
+    console.log('[메시지 전송]', gameId, content);
     this.socket.emit('sendMessage', { gameId, content });
   }
 
-  // 게임 나가기
-  leaveGame() {
-    console.log('게임 나가기 요청');
+  // ✅ 게임 나가기
+  leaveGame(callback) {
+    console.log('[게임 나가기 요청]');
     this.socket.emit('leaveGame');
+    if (callback) this.registerHandler('leftGame', callback);
   }
 
-  // 이벤트 핸들러 등록
+  // ✅ 이벤트 핸들러 등록
   registerHandler(event, callback) {
-    console.log('이벤트 핸들러 등록:', event);
-    // 기존 핸들러가 있으면 제거
+    console.log('[이벤트 등록]', event);
     if (this.eventHandlers.has(event)) {
       this.socket.off(event, this.eventHandlers.get(event));
     }
-
-    // 새 핸들러 등록
     this.eventHandlers.set(event, callback);
     this.socket.on(event, callback);
   }
 
-  // 이벤트 핸들러 제거
+  // ✅ 이벤트 핸들러 해제
   removeHandler(event) {
-    console.log('이벤트 핸들러 제거:', event);
+    console.log('[이벤트 핸들러 제거]', event);
     if (this.eventHandlers.has(event)) {
       this.socket.off(event, this.eventHandlers.get(event));
       this.eventHandlers.delete(event);
     }
   }
 
-  // 모든 이벤트 핸들러 제거
+  // ✅ 모든 핸들러 해제
   removeAllHandlers() {
-    console.log('모든 이벤트 핸들러 제거');
+    console.log('[모든 이벤트 핸들러 제거]');
     this.eventHandlers.forEach((handler, event) => {
       this.socket.off(event, handler);
     });
     this.eventHandlers.clear();
   }
-  
-  // 소켓 연결 상태 확인
+
+  // ✅ 소켓 연결 상태 확인
   isConnected() {
     return this.socket && this.socket.connected;
   }
-  
-  // 소켓 ID 반환
+
+  // ✅ 소켓 ID 가져오기
   getSocketId() {
     return this.socket ? this.socket.id : null;
   }
-  
-  // 소켓 연결 해제
+
+  // ✅ 소켓 연결 끊기
   disconnect() {
     if (this.socket) {
+      console.log('[소켓 연결 해제]');
       this.socket.disconnect();
     }
   }
-  
-  // 소켓 재연결
+
+  // ✅ 소켓 다시 연결
   reconnect() {
     if (this.socket) {
+      console.log('[소켓 재연결 시도]');
       this.socket.connect();
     }
   }

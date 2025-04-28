@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <script type="text/javascript">
+     // SPA 라우팅을 위한 리다이렉트 처리
+     (function(l) {
+       if (l.search[1] === '/' ) {
+         var decoded = l.search.slice(1).split('&').map(function(s) { 
+           return s.replace(/~and~/g, '&')
+         }).join('?');
+         window.history.replaceState(null, null,
+             l.pathname.slice(0, -1) + decoded + l.hash
+         );
+       }
+     }(window.location))
+   </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>먹이사슬 게임</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    #root {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-size: 1.5rem;
+      color: #666;
+    }
+    
+    .loading i {
+      margin-right: 10px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="loading">
+      <i class="fas fa-spinner"></i> 게임 로딩 중...
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+.lobby-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.lobby-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.lobby-header h1 {
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.lobby-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.create-room-form {
+  max-width: 500px;
+  margin: 0 auto 30px;
+  padding: 20px;
+}
+
+.create-room-form h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.room-list-container {
+  margin-top: 30px;
+}
+
+.room-list-container h2 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.no-rooms {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.room-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.room-card:hover {
+  transform: translateY(-5px);
+}
+
+.room-card.playing {
+  opacity: 0.7;
+}
+
+.room-status {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.room-status.waiting {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.room-status.playing {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+.join-button {
+  width: 100%;
+  margin-top: 15px;
+}
+
+.join-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .lobby-container {
+    padding: 20px 10px;
+  }
+  
+  .lobby-actions {
+    flex-direction: column;
+  }
+  
+  .lobby-actions button {
+    width: 100%;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,264 @@
+.player-info-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  margin-bottom: 15px;
+}
+
+.player-info-header {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 15px;
+  text-align: center;
+  position: relative;
+}
+
+.player-info-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.player-info-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 3px;
+  background-color: var(--accent-color);
+}
+
+.player-info-content {
+  padding: 15px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s ease;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--primary-color);
+  flex: 0 0 120px;
+}
+
+.info-value {
+  flex: 1;
+  text-align: right;
+  font-weight: 500;
+}
+
+.animal-info-section {
+  margin: 15px 0;
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.animal-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.animal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.animal-icon.tier-5 {
+  background-color: var(--tier-5);
+}
+
+.animal-icon.tier-4 {
+  background-color: var(--tier-4);
+}
+
+.animal-icon.tier-3 {
+  background-color: var(--tier-3);
+}
+
+.animal-icon.tier-2 {
+  background-color: var(--tier-2);
+}
+
+.animal-icon.tier-1 {
+  background-color: var(--tier-1);
+}
+
+.animal-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.tier, .habitat {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.tier.tier-5 {
+  background-color: var(--tier-5);
+  color: white;
+}
+
+.tier.tier-4 {
+  background-color: var(--tier-4);
+  color: white;
+}
+
+.tier.tier-3 {
+  background-color: var(--tier-3);
+  color: white;
+}
+
+.tier.tier-2 {
+  background-color: var(--tier-2);
+  color: white;
+}
+
+.tier.tier-1 {
+  background-color: var(--tier-1);
+  color: white;
+}
+
+.habitat.habitat-forest {
+  background-color: var(--habitat-forest);
+  color: white;
+}
+
+.habitat.habitat-river {
+  background-color: var(--habitat-river);
+  color: white;
+}
+
+.habitat.habitat-field {
+  background-color: var(--habitat-field);
+  color: white;
+}
+
+.habitat.habitat-sky {
+  background-color: var(--habitat-sky);
+  color: white;
+}
+
+.location-badge {
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 15px 0;
+}
+
+.strategy-info-section {
+  margin: 15px 0;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  color: var(--primary-color);
+  position: relative;
+  padding-left: 15px;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-color);
+  border-radius: 50%;
+}
+
+/* 애니메이션 효과 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .player-info-card {
+    margin-bottom: 10px;
+  }
+  
+  .player-info-header {
+    padding: 10px;
+  }
+  
+  .player-info-content {
+    padding: 10px;
+  }
+  
+  .info-label {
+    flex: 0 0 100px;
+    font-size: 0.9rem;
+  }
+  
+  .info-value {
+    font-size: 0.9rem;
+  }
+  
+  .animal-info-section {
+    padding: 10px;
+  }
+  
+  .animal-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 1.2rem;
+  }
+  
+  .animal-name {
+    font-size: 1.1rem;
+  }
+}

@@ -1,0 +1,391 @@
+/* HomePage.css */
+.home-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f9fa;
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0.7)), 
+                    url('https://images.unsplash.com/photo-1557682250-33bd709cbe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.home-header {
+  background-color: rgba(58, 117, 97, 0.95);
+  padding: 15px 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.logo-icon {
+  width: 50px;
+  height: 50px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.game-title {
+  color: white;
+  margin: 0;
+  font-size: 2.2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.home-content {
+  flex: 1;
+  padding: 30px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.game-intro {
+  text-align: center;
+  margin-bottom: 40px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-top: 5px solid var(--primary-color);
+}
+
+.game-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.game-tagline {
+  margin-top: 20px;
+}
+
+.game-tagline h2 {
+  color: var(--primary-color);
+  font-size: 2rem;
+  margin-bottom: 10px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.game-tagline p {
+  color: var(--secondary-color);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.food-chain-pyramid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.tier {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.animal {
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.animal:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.tier-1 .animal {
+  background-color: var(--tier-1);
+  color: white;
+}
+
+.tier-2 .animal {
+  background-color: var(--tier-2);
+  color: white;
+}
+
+.tier-3 .animal {
+  background-color: var(--tier-3);
+  color: white;
+}
+
+.tier-4 .animal {
+  background-color: var(--tier-4);
+  color: white;
+}
+
+.tier-5 .animal {
+  background-color: var(--tier-5);
+  color: white;
+}
+
+.home-main-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.login-form {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  height: fit-content;
+}
+
+.login-form h2 {
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.join-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  margin-top: 10px;
+}
+
+.game-rules {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.game-rules h2 {
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.rules-content {
+  color: var(--text-color);
+}
+
+.rules-intro {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.rules-intro p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.rules-section {
+  margin-bottom: 25px;
+}
+
+.rules-section h3 {
+  color: var(--secondary-color);
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+}
+
+.rules-list, .actions-list {
+  padding-left: 0;
+  list-style-type: none;
+}
+
+.rules-list li, .actions-list li {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.rule-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  margin-right: 15px;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.rule-text {
+  flex: 1;
+  line-height: 1.6;
+}
+
+.animal-highlight {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.action-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 15px;
+  flex-shrink: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 60%;
+}
+
+.action-icon.change {
+  background-color: var(--info-color);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/></svg>');
+}
+
+.action-icon.predict {
+  background-color: var(--warning-color);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z"/></svg>');
+}
+
+.action-icon.kill {
+  background-color: var(--danger-color);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M7 14l5-5 5 5z"/></svg>');
+}
+
+.action-name {
+  font-weight: 600;
+  color: var(--secondary-color);
+  margin-right: 10px;
+}
+
+.action-desc {
+  flex: 1;
+  line-height: 1.6;
+}
+
+.animal-table-container {
+  margin-top: 40px;
+  padding: 30px;
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.animal-table-container h2 {
+  color: white;
+  text-align: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--accent-color);
+  padding-bottom: 10px;
+  display: inline-block;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  margin: 0 -15px;
+  padding: 0 15px;
+}
+
+.rules-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  background-color: #1a1a1a;
+  color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.rules-table th {
+  background-color: #333;
+  padding: 12px 15px;
+  text-align: center;
+  font-weight: 600;
+  border: 1px solid #444;
+}
+
+.rules-table td {
+  padding: 12px 15px;
+  border: 1px solid #444;
+  text-align: center;
+}
+
+.rules-table .animal-name {
+  font-weight: 700;
+}
+
+.rules-table .animal-tier-1 { color: #7fa8d7; }
+.rules-table .animal-tier-2 { color: #5cb85c; }
+.rules-table .animal-tier-3 { color: #5bc0de; }
+.rules-table .animal-tier-4 { color: #f0ad4e; }
+.rules-table .animal-tier-5 { color: #d9534f; }
+
+.home-footer {
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin-top: auto;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .home-main-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .game-tagline h2 {
+    font-size: 1.5rem;
+  }
+  
+  .game-tagline p {
+    font-size: 1rem;
+  }
+  
+  .animal-table-container {
+    padding: 15px;
+  }
+  
+  .rules-table {
+    font-size: 0.8rem;
+  }
+  
+  .rules-table th, .rules-table td {
+    padding: 8px;
+  }
+  
+  .food-chain-pyramid {
+    transform: scale(0.8);
+  }
+}
+
+/* 태블릿 반응형 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .home-main-content {
+    grid-template-columns: 1fr 1.5fr;
+  }
+}

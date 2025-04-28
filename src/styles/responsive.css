@@ -1,0 +1,179 @@
+/* 모바일 반응형 디자인 */
+/* 기본 미디어 쿼리 */
+
+/* 모바일 디바이스 (세로 모드) */
+@media (max-width: 576px) {
+  /* 글꼴 크기 조정 */
+  body {
+    font-size: 14px;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.2rem;
+  }
+  
+  /* 버튼 크기 조정 */
+  button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+  
+  /* 입력 필드 조정 */
+  input, select, textarea {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+  
+  /* 컨테이너 패딩 조정 */
+  .container {
+    padding: 0 10px;
+  }
+  
+  /* 게임 보드 레이아웃 조정 */
+  .game-playing {
+    grid-template-columns: 1fr;
+  }
+  
+  .game-board-container {
+    height: 60vh;
+  }
+  
+  .game-sidebar {
+    height: auto;
+  }
+  
+  /* 로비 레이아웃 조정 */
+  .lobby-actions {
+    flex-direction: column;
+  }
+  
+  .lobby-actions button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  /* 홈페이지 레이아웃 조정 */
+  .food-chain-pyramid {
+    transform: scale(0.8);
+  }
+  
+  /* 게임 카드 조정 */
+  .room-card {
+    padding: 15px;
+  }
+}
+
+/* 모바일 디바이스 (가로 모드) */
+@media (min-width: 577px) and (max-width: 767px) {
+  /* 게임 보드 레이아웃 조정 */
+  .game-playing {
+    grid-template-columns: 1fr;
+  }
+  
+  .game-board-container {
+    height: 50vh;
+  }
+}
+
+/* 태블릿 */
+@media (min-width: 768px) and (max-width: 991px) {
+  /* 게임 보드 레이아웃 조정 */
+  .game-playing {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* 터치 인터페이스 최적화 */
+@media (hover: none) {
+  /* 터치 타겟 크기 증가 */
+  button, 
+  .action-button, 
+  .location-card, 
+  .player-card,
+  .room-card {
+    min-height: 44px; /* 애플 권장 최소 터치 타겟 크기 */
+  }
+  
+  /* 호버 효과 대신 액티브 효과 사용 */
+  .action-button:active:not(:disabled),
+  .location-card:active,
+  .player-card:active,
+  .room-card:active {
+    transform: translateY(-3px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 터치 피드백 개선 */
+  button:active {
+    opacity: 0.8;
+  }
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #121212;
+    --text-color: #f5f5f5;
+    --border-color: #333;
+    --primary-color: #a67c52;
+    --secondary-color: #5a9c6e;
+  }
+  
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+  
+  .card {
+    background-color: #1e1e1e;
+  }
+  
+  input, select, textarea {
+    background-color: #2a2a2a;
+    color: var(--text-color);
+    border-color: var(--border-color);
+  }
+}
+
+/* 접근성 개선 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* 화면 방향 변경 처리 */
+@media screen and (orientation: portrait) {
+  .game-board {
+    flex-direction: column;
+  }
+}
+
+@media screen and (orientation: landscape) and (max-width: 991px) {
+  .game-board {
+    flex-direction: row;
+  }
+  
+  .game-playing {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* 안전 영역 처리 (노치 디자인 대응) */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    padding-top: max(0px, env(safe-area-inset-top));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+}

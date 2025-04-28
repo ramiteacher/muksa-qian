@@ -1,28 +1,21 @@
 import { io } from 'socket.io-client';
 
-const BACKEND_URL = 'https://food-chain-game.onrender.com';
+const BACKEND_URL = 'https://muksa.onrender.com';  // 이거 그대로
 
-// 게임 소켓 이벤트 관리 서비스
 class GameSocketService {
   constructor(socket) {
-    // 소켓이 전달되지 않은 경우 새로 생성
     if (!socket) {
       this.socket = io(BACKEND_URL, {
-        withCredentials: true,
-        transports: ['websocket'],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000
+        transports: ['websocket'],  // ✅ 여기 심플하게
       });
       console.log('새 소켓 연결을 생성했습니다.');
     } else {
       this.socket = socket;
       console.log('기존 소켓 연결을 사용합니다.');
     }
-    
+
     this.eventHandlers = new Map();
     
-    // 기본 이벤트 리스너 설정
     this.socket.on('connect', () => {
       console.log('소켓 서버에 연결되었습니다. ID:', this.socket.id);
     });
@@ -36,6 +29,7 @@ class GameSocketService {
     });
   }
 
+  
   // 로비 입장
   enterLobby(playerName, callback) {
     console.log('로비 입장 요청:', playerName);

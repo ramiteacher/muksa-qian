@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GameContext from '../contexts/GameContext';
-import { createGameRoomInFirebase, fetchGameRoomsFromFirebase } from '../services/firebaseService';
-import { database } from '../firebase';           // database는 너가 만든 firebase.js에서
-import { ref, remove } from 'firebase/database';   // ref, remove는 firebase SDK에서 직접
+import { createGameRoomInFirebase } from '../services/firebaseService';
+import { database } from '../firebase';  // database는 가져오고
+import { ref, onValue, remove } from 'firebase/database'; // 리스너 추가!
 
-import '../styles/GameLobby.css'; // 스타일도 수정할 예정
+import '../styles/GameLobby.css';
 
-const MAX_PLAYERS = 13; // 최대 참가자 수
+const MAX_PLAYERS = 13;
 
 const GameLobby = () => {
   const { gameState } = useContext(GameContext);
@@ -17,21 +17,25 @@ const GameLobby = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadRooms = async () => {
-      try {
-        const fetchedRooms = await fetchGameRoomsFromFirebase();
-        const roomList = Object.entries(fetchedRooms).map(([id, room]) => ({
+    const roomsRef = ref(database, 'rooms');
+
+    const unsubscribe = onValue(roomsRef, async (snapshot) => {
+      const data = snapshot.val();
+
+      if (data) {
+        const roomList = Object.entries(data).map(([id, room]) => ({
           id,
           ...room
         }));
-        // ✅ 플레이어가 0명인 방은 삭제
+
+        // 0명짜리 방 삭제 처리
         const filteredRooms = await Promise.all(roomList.map(async (room) => {
           const currentPlayers = room.players ? room.players.length : 0;
           if (currentPlayers === 0) {
             try {
               await remove(ref(database, `rooms/${room.id}`));
               console.log(`플레이어 0명이라 방 삭제됨: ${room.name}`);
-              return null; // 삭제된 방은 리스트에 넣지 않음
+              return null;
             } catch (error) {
               console.error('방 삭제 실패:', error);
             }
@@ -39,16 +43,16 @@ const GameLobby = () => {
           return room;
         }));
 
-      
-        setRooms(filteredRooms.filter(room => room !== null)); 
-      } catch (error) {
-        console.error('방 목록 불러오기 오류:', error);
-      } finally {
-        setLoading(false);
+        // 필터링된 방만 세팅
+        setRooms(filteredRooms.filter(r => r !== null));
+      } else {
+        setRooms([]);
       }
-    };
 
-    loadRooms();
+      setLoading(false);
+    });
+
+    return () => unsubscribe(); // 🔥 리스너 해제 (메모리 누수 방지)
   }, []);
 
   const handleCreateRoom = async () => {

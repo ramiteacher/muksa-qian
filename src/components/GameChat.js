@@ -1,10 +1,16 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useContext } from 'react';
 import '../styles/GameChat.css';
+import SocketContext from '../contexts/SocketContext';
+import { useParams } from 'react-router-dom';
+import GameSocketService from '../services/GameSocketService';
 
 const GameChat = ({ messages, onSendMessage }) => {
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const { socket } = useContext(SocketContext);
+  const [socketService, setSocketService] = useState(null);
+  const { gameId } = useParams();
   
   // 메시지 수 제한 (최대 50개)
   const MAX_MESSAGES = 50;
@@ -23,6 +29,26 @@ const GameChat = ({ messages, onSendMessage }) => {
     return `${messages.length - MAX_MESSAGES}개의 이전 메시지가 숨겨져 있습니다.`;
   }, [messages]);
 
+  // 소켓 서비스 초기화
+  useEffect(() => {
+    if (socket) {
+      const service = new GameSocketService(socket);
+      setSocketService(service);
+      
+      // 새 메시지 이벤트 리스너
+      service.registerHandler('newMessage', (message) => {
+        if (typeof onSendMessage === 'function') {
+          // 외부에서 메시지 처리하도록 콜백 호출
+          onSendMessage(message.content, message);
+        }
+      });
+      
+      return () => {
+        service.removeHandler('newMessage');
+      };
+    }
+  }, [socket, onSendMessage]);
+
   const handleMessageChange = (e) => {
     setMessage(e.target.value);
   };
@@ -30,6 +56,12 @@ const GameChat = ({ messages, onSendMessage }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (message.trim()) {
+      if (socketService && gameId) {
+        // 소켓을 통해 서버로 메시지 전송
+        socketService.sendMessage(gameId, message);
+      }
+      
+      // 로컬 UI 업데이트를 위해 기존 콜백도 호출
       onSendMessage(message);
       setMessage('');
     }

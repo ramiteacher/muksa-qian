@@ -9,6 +9,7 @@ import PlayerInfo from './PlayerInfo';
 import GameChat from './GameChat';
 import GameControls from './GameControls';
 import '../styles/GameRoom.css';
+import GameSocketService from '../services/GameSocketService'; // GameSocketService import 추가
 
 // 게임 단계 상수
 const GAME_PHASES = {
@@ -210,6 +211,9 @@ const GameRoom = () => {
   const navigate = useNavigate();
   const { gameState, setGameState } = useContext(GameContext);
   const { socket } = useContext(SocketContext);
+  
+  // GameSocketService 인스턴스 생성
+  const [socketService, setSocketService] = useState(null);
   
   const [isLoading, setIsLoading] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
@@ -621,6 +625,181 @@ const GameRoom = () => {
     return () => unsubscribe(); // 컴포넌트 언마운트시 리스너 해제
   }, [gameId]);
   
+  // 컴포넌트 마운트 시 소켓 서비스 초기화
+  useEffect(() => {
+    if (socket) {
+      // 소켓 서비스 초기화
+      const gameSocketServiceInstance = new GameSocketService(socket);
+      setSocketService(gameSocketServiceInstance);
+      
+      console.log('[GameRoom] 소켓 서비스가 초기화되었습니다.');
+      
+      // 컴포넌트 언마운트 시 소켓 서비스 정리
+      return () => {
+        if (gameSocketServiceInstance) {
+          console.log('[GameRoom] 소켓 이벤트 리스너를 제거합니다.');
+          gameSocketServiceInstance.removeAllHandlers();
+        }
+      };
+    }
+  }, [socket]);
+  
+  // 게임 방 입장 시 join_game 호출
+  useEffect(() => {
+    // 소켓 서비스와 게임 ID가 있을 때만 실행
+    if (socketService && gameId && gameState.playerName) {
+      console.log('[GameRoom] 게임 참가 요청:', gameId, gameState.playerName);
+      
+      // join_game 이벤트 발생
+      socketService.joinGame(gameId, gameState.playerName, (gameData) => {
+        console.log('[GameRoom] 게임 참가 완료:', gameData);
+        addSystemMessage(`${gameState.playerName}님이 게임에 참가했습니다.`);
+        
+        // 게임 데이터 설정
+        if (gameData.started) {
+          setGameStarted(true);
+          setCurrentRound(gameData.currentRound || 1);
+          setCurrentPhase(gameData.currentPhase || GAME_PHASES.ANIMAL_SELECTION);
+          
+          // 게임 정보 업데이트
+          if (gameData.players) {
+            setPlayers(gameData.players);
+            
+            // 자신의 플레이어 정보 찾기
+            const myPlayer = gameData.players.find(p => p.id === socket.id || p.name === gameState.playerName);
+            if (myPlayer) {
+              setGameState(prev => ({
+                ...prev,
+                animal: myPlayer.animal || prev.animal,
+                habitat: myPlayer.habitat || prev.habitat,
+                tier: myPlayer.tier || prev.tier,
+                location: myPlayer.location || prev.location
+              }));
+              
+              setSelectedLocation(myPlayer.location || null);
+            }
+          }
+        }
+      });
+      
+      // game_updated 이벤트 리스너 등록
+      socketService.registerHandler('game_updated', (gameData) => {
+        console.log('[GameRoom] 게임 업데이트 수신:', gameData);
+        
+        // 게임 상태 업데이트
+        if (gameData.started !== undefined) {
+          setGameStarted(gameData.started);
+        }
+        
+        if (gameData.currentRound) {
+          setCurrentRound(gameData.currentRound);
+        }
+        
+        if (gameData.currentPhase) {
+          changeGamePhase(gameData.currentPhase);
+        }
+        
+        if (gameData.players) {
+          setPlayers(gameData.players);
+        }
+        
+        // 게임 시작 메시지
+        if (gameData.started && !gameStarted) {
+          addSystemMessage('게임이 시작되었습니다!');
+        }
+      });
+      
+      // player_game_info 이벤트 리스너 등록
+      socketService.registerHandler('player_game_info', (playerData) => {
+        console.log('[GameRoom] 플레이어 정보 수신:', playerData);
+        
+        // 플레이어 정보 업데이트
+        setGameState(prev => ({
+          ...prev,
+          animal: playerData.animal || prev.animal,
+          habitat: playerData.habitat || prev.habitat,
+          tier: playerData.tier || prev.tier
+        }));
+        
+        // 플레이어 정보 메시지
+        addSystemMessage(`당신의 동물은 ${playerData.animal || gameState.animal}입니다.`);
+        addSystemMessage(`당신의 서식지는 ${playerData.habitat || gameState.habitat}입니다.`);
+      });
+      
+      // game_message 이벤트 리스너 등록 (채팅 메시지)
+      socketService.registerHandler('game_message', (messageData) => {
+        console.log('[GameRoom] 채팅 메시지 수신:', messageData);
+        
+        // 채팅 메시지 추가
+        const newMessage = {
+          id: Date.now().toString(),
+          sender: messageData.sender,
+          content: messageData.content,
+          timestamp: messageData.timestamp || new Date().toISOString(),
+          isSystem: messageData.isSystem || false
+        };
+        
+        setMessages(prev => [...prev, newMessage]);
+      });
+      
+      // game_action_result 이벤트 리스너 등록 (액션 결과)
+      socketService.registerHandler('game_action_result', (actionResult) => {
+        console.log('[GameRoom] 액션 결과 수신:', actionResult);
+        
+        // 액션 결과에 따른 메시지
+        if (actionResult.type === 'move') {
+          addSystemMessage(`${actionResult.playerName || '당신'}이(가) ${actionResult.location}(으)로 이동했습니다.`);
+          
+          // 자신의 이동이면 위치 업데이트
+          if (!actionResult.playerName || actionResult.playerName === gameState.playerName) {
+            setSelectedLocation(actionResult.location);
+          }
+        } else if (actionResult.type === 'attack') {
+          if (actionResult.success) {
+            addSystemMessage(`${actionResult.playerName || '당신'}이(가) ${actionResult.targetName}을(를) 공격했습니다!`);
+          } else {
+            addSystemMessage(`${actionResult.playerName || '당신'}의 ${actionResult.targetName}에 대한 공격이 실패했습니다.`);
+          }
+        } else if (actionResult.type === 'peek') {
+          // 엿보기 결과 메시지
+          if (actionResult.animalInfo) {
+            addSystemMessage(`${actionResult.targetName}의 동물은 ${actionResult.animalInfo.animal}입니다.`);
+            addSystemMessage(`${actionResult.targetName}의 서식지는 ${actionResult.animalInfo.habitat}입니다.`);
+          }
+        }
+      });
+      
+      // game_over 이벤트 리스너 등록
+      socketService.registerHandler('game_over', (gameResult) => {
+        console.log('[GameRoom] 게임 종료:', gameResult);
+        
+        // 게임 종료 메시지
+        addSystemMessage('게임이 종료되었습니다!');
+        
+        if (gameResult.winner) {
+          addSystemMessage(`${gameResult.winner.name}(${gameResult.winner.animal})이(가) 승리했습니다!`);
+        }
+        
+        // 게임 상태 업데이트
+        setGameState(prev => ({
+          ...prev,
+          gameStatus: 'finished'
+        }));
+      });
+    }
+    
+    // 컴포넌트 언마운트 시 이벤트 리스너 정리
+    return () => {
+      if (socketService) {
+        // 게임 관련 이벤트 리스너 제거
+        socketService.removeHandler('game_updated');
+        socketService.removeHandler('player_game_info');
+        socketService.removeHandler('game_message');
+        socketService.removeHandler('game_action_result');
+        socketService.removeHandler('game_over');
+      }
+    };
+  }, [socketService, gameId, gameState.playerName, socket, addSystemMessage, gameStarted, changeGamePhase, setGameState]);
   
   // 로딩 중이면 로딩 화면 표시
   if (isLoading) {

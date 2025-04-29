@@ -7,6 +7,7 @@ import '../styles/GameLobby.css'; // 스타일 있으면
 
 const GameLobby = () => {
   const { gameState } = useContext(GameContext);
+  const playerName = gameState.playerName;  // ✅ playerName 여기서 가져오기
   const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);

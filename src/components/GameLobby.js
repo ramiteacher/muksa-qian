@@ -42,10 +42,9 @@ const GameLobby = () => {
         console.log('방 생성 완료, 방 ID:', roomId);
   
         // 방 생성 후 로비 방 목록 다시 불러오기
-        const updatedRooms = await fetchGameRoomsFromFirebase();
-        setRooms(updatedRooms);
+        navigate(`/game/${roomId}`);
       }
-    } catch (error) {
+    }  catch (error) {
       console.error('방 생성 실패:', error);
       alert('방 생성 중 오류가 발생했습니다.');
     }

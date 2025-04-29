@@ -53,16 +53,57 @@
   font-style: italic;
 }
 
+.room-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+
+
 .room-card {
-  background-color: white;
-  border-radius: 8px;
+  background-color: #ffffff;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  width: 220px;
   padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: 0.3s;
 }
 
 .room-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.room-card.full {
+  background-color: #f8d7da;
+  border-color: #f5c2c7;
+  pointer-events: none;
+}
+
+.room-name {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.room-players {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #555;
+  text-align: center;
+}
+
+.room-host {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  font-size: 0.8rem;
+  color: #888;
 }
 
 .room-card.playing {

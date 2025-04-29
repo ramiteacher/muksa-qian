@@ -2,6 +2,8 @@ import React, { useState, useContext, useEffect, useCallback, useMemo, memo, use
 import { useParams, useNavigate } from 'react-router-dom';
 import GameContext from '../contexts/GameContext';
 import SocketContext from '../contexts/SocketContext';
+import { database } from '../firebase';
+import { ref, onValue } from 'firebase/database';
 import GameBoard from './GameBoard';
 import PlayerInfo from './PlayerInfo';
 import GameChat from './GameChat';
@@ -600,19 +602,25 @@ const GameRoom = () => {
   
   // 컴포넌트 마운트 시 게임 정보 로드
   useEffect(() => {
-    // 실제 구현에서는 소켓을 통해 게임 정보를 요청합니다
-    setTimeout(() => {
-      // 임시 데이터
-      const dummyPlayers = [
-        { id: '1', name: gameState.playerName || '플레이어1', isHost: true, isReady: true },
-        { id: '2', name: '플레이어2', isHost: false, isReady: true },
-        { id: '3', name: '플레이어3', isHost: false, isReady: false }
-      ];
-      
-      setPlayers(dummyPlayers);
+    const playersRef = ref(database, `rooms/${gameId}/players`);
+  
+    const unsubscribe = onValue(playersRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const playerList = Object.entries(data).map(([id, player]) => ({
+          id,
+          ...player
+        }));
+        setPlayers(playerList);
+      } else {
+        setPlayers([]); // 아무도 없으면 빈 배열
+      }
       setIsLoading(false);
-    }, 1000);
-  }, [gameState.playerName]);
+    });
+  
+    return () => unsubscribe(); // 컴포넌트 언마운트시 리스너 해제
+  }, [gameId]);
+  
   
   // 로딩 중이면 로딩 화면 표시
   if (isLoading) {

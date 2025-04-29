@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GameContext from '../contexts/GameContext';
 import { createGameRoomInFirebase, fetchGameRoomsFromFirebase } from '../services/firebaseService';
-
+import { ref, remove } from 'firebase/database';  // ⬅️ 추가
 import '../styles/GameLobby.css'; // 스타일도 수정할 예정
 
 const MAX_PLAYERS = 13; // 최대 참가자 수
@@ -22,6 +22,22 @@ const GameLobby = () => {
           id,
           ...room
         }));
+        // ✅ 플레이어가 0명인 방은 삭제
+        const filteredRooms = await Promise.all(roomList.map(async (room) => {
+          const currentPlayers = room.players ? room.players.length : 0;
+          if (currentPlayers === 0) {
+            try {
+              await remove(ref(database, `rooms/${room.id}`));
+              console.log(`플레이어 0명이라 방 삭제됨: ${room.name}`);
+              return null; // 삭제된 방은 리스트에 넣지 않음
+            } catch (error) {
+              console.error('방 삭제 실패:', error);
+            }
+          }
+          return room;
+        }));
+
+      
         setRooms(roomList);
       } catch (error) {
         console.error('방 목록 불러오기 오류:', error);

@@ -1,5 +1,5 @@
 import { database } from '../firebase';  // 네 firebase.js에서 export한 database
-import { ref, push, get, child } from 'firebase/database';
+import { ref, push, set, get, child } from 'firebase/database'; // set 추가!!!
 
 // ✅ 방 생성
 export async function createGameRoomInFirebase(gameName, playerName) {
@@ -11,7 +11,7 @@ export async function createGameRoomInFirebase(gameName, playerName) {
       players: [],
       createdAt: Date.now()
     };
-    await set(newRoomRef, roomData);  // push 후 set!!
+    await set(newRoomRef, roomData);  // push 후 set
     console.log('Firebase 방 생성 완료:', newRoomRef.key);
     return newRoomRef.key;  // 생성된 방 ID 반환
   } catch (error) {
@@ -20,7 +20,7 @@ export async function createGameRoomInFirebase(gameName, playerName) {
   }
 }
 
-// 방 목록 불러오기
+// ✅ 방 목록 불러오기
 export async function fetchGameRoomsFromFirebase() {
   try {
     const snapshot = await get(child(ref(database), 'rooms'));

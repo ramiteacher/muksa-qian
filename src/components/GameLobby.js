@@ -29,17 +29,24 @@ const GameLobby = () => {
 
   // 방 만들기
   const handleCreateRoom = async () => {
+    if (!playerName) {
+      alert('플레이어 이름을 먼저 입력하세요.');
+      return;
+    }
+    
     try {
-      const newRoom = {
-        name: `${gameState.playerName}의 방`,
-        createdAt: Date.now(),
-        host: gameState.playerName,
-        status: 'waiting' // 추가 정보
-      };
-      const roomId = await createGameRoomInFirebase(newRoom);
-      navigate(`/game/${roomId}`); // 생성된 방으로 이동
+      const gameName = prompt('생성할 방 이름을 입력하세요.');
+      if (gameName) {
+        const roomId = await createGameRoomInFirebase(gameName, playerName);
+        console.log('방 생성 완료, 방 ID:', roomId);
+  
+        // 방 생성 후 로비 방 목록 다시 불러오기
+        const updatedRooms = await fetchGameRoomsFromFirebase();
+        setRooms(updatedRooms);
+      }
     } catch (error) {
-      console.error('방 생성 오류:', error);
+      console.error('방 생성 실패:', error);
+      alert('방 생성 중 오류가 발생했습니다.');
     }
   };
 

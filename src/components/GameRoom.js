@@ -591,8 +591,21 @@ const GameRoom = () => {
     navigate('/lobby');
   }, [navigate]);
   
-  // 메시지 전송 핸들러
-  const handleSendMessage = useCallback((content) => {
+  // 메시지 전송 핸들러를 최적화
+  const handleSendMessage = useCallback((content, messageObj) => {
+    // 이미 완성된 메시지 객체가 있는 경우 (소켓 이벤트로부터 전달된 경우)
+    if (messageObj) {
+      setMessages(prev => {
+        // 중복 방지
+        if (prev.some(msg => msg.id === messageObj.id)) {
+          return prev;
+        }
+        return [...prev, messageObj];
+      });
+      return;
+    }
+
+    // 새 메시지 생성
     const newMessage = {
       id: Date.now().toString(),
       sender: gameState.playerName,
@@ -600,9 +613,29 @@ const GameRoom = () => {
       timestamp: new Date().toISOString()
     };
     
-    // 실제 구현에서는 소켓을 통해 메시지를 전송합니다
+    // 메시지 목록에 추가
     setMessages(prev => [...prev, newMessage]);
-  }, [gameState.playerName]);
+
+    // 소켓 서비스를 통해 메시지 전송 (있는 경우)
+    if (socketService && gameId) {
+      try {
+        const sent = socketService.sendMessage(gameId, content);
+        if (!sent) {
+          // 전송 실패 알림
+          const errorMsg = {
+            id: Date.now().toString() + '-error',
+            sender: 'System',
+            content: '메시지 전송 실패: 서버 연결이 끊어졌습니다.',
+            timestamp: new Date().toISOString(),
+            isSystem: true
+          };
+          setMessages(prev => [...prev, errorMsg]);
+        }
+      } catch (error) {
+        console.error('메시지 전송 중 오류:', error);
+      }
+    }
+  }, [gameState.playerName, socketService, gameId]);
   
   // 컴포넌트 마운트 시 게임 정보 로드
   useEffect(() => {
@@ -625,64 +658,44 @@ const GameRoom = () => {
     return () => unsubscribe(); // 컴포넌트 언마운트시 리스너 해제
   }, [gameId]);
   
-  // 컴포넌트 마운트 시 소켓 서비스 초기화
+  // useEffect 부분 수정 - 소켓 서비스 초기화 로직 개선
   useEffect(() => {
     if (socket) {
       // 소켓 서비스 초기화
       const gameSocketServiceInstance = new GameSocketService(socket);
       setSocketService(gameSocketServiceInstance);
       
-      console.log('[GameRoom] 소켓 서비스가 초기화되었습니다.');
+      console.log('[GameRoom] 소켓 서비스가 초기화되었습니다. 소켓 ID:', socket.id);
+      
+      // 재연결 이벤트 리스너 추가
+      socket.on('reconnect', () => {
+        console.log('[GameRoom] 소켓이 재연결되었습니다. 게임 방에 다시 참가합니다.');
+        if (gameId && gameState.playerName) {
+          gameSocketServiceInstance.joinGame(gameId, gameState.playerName, (gameData) => {
+            console.log('[GameRoom] 게임 재참가 완료:', gameData);
+          });
+        }
+      });
       
       // 컴포넌트 언마운트 시 소켓 서비스 정리
       return () => {
+        console.log('[GameRoom] 소켓 이벤트 리스너를 제거합니다.');
+        socket.off('reconnect');
         if (gameSocketServiceInstance) {
-          console.log('[GameRoom] 소켓 이벤트 리스너를 제거합니다.');
           gameSocketServiceInstance.removeAllHandlers();
         }
       };
     }
-  }, [socket]);
+  }, [socket, gameId, gameState.playerName]);
   
-  // 게임 방 입장 시 join_game 호출
+  // 게임 방 입장 시 join_game 호출 - 로직 개선
   useEffect(() => {
     // 소켓 서비스와 게임 ID가 있을 때만 실행
     if (socketService && gameId && gameState.playerName) {
       console.log('[GameRoom] 게임 참가 요청:', gameId, gameState.playerName);
       
-      // join_game 이벤트 발생
-      socketService.joinGame(gameId, gameState.playerName, (gameData) => {
-        console.log('[GameRoom] 게임 참가 완료:', gameData);
-        addSystemMessage(`${gameState.playerName}님이 게임에 참가했습니다.`);
-        
-        // 게임 데이터 설정
-        if (gameData.started) {
-          setGameStarted(true);
-          setCurrentRound(gameData.currentRound || 1);
-          setCurrentPhase(gameData.currentPhase || GAME_PHASES.ANIMAL_SELECTION);
-          
-          // 게임 정보 업데이트
-          if (gameData.players) {
-            setPlayers(gameData.players);
-            
-            // 자신의 플레이어 정보 찾기
-            const myPlayer = gameData.players.find(p => p.id === socket.id || p.name === gameState.playerName);
-            if (myPlayer) {
-              setGameState(prev => ({
-                ...prev,
-                animal: myPlayer.animal || prev.animal,
-                habitat: myPlayer.habitat || prev.habitat,
-                tier: myPlayer.tier || prev.tier,
-                location: myPlayer.location || prev.location
-              }));
-              
-              setSelectedLocation(myPlayer.location || null);
-            }
-          }
-        }
-      });
-      
-      // game_updated 이벤트 리스너 등록
+      // join_game 이벤트 발생 전에 이벤트 리스너 등록
+      // 게임 업데이트 이벤트 리스너 등록
       socketService.registerHandler('game_updated', (gameData) => {
         console.log('[GameRoom] 게임 업데이트 수신:', gameData);
         
@@ -730,16 +743,44 @@ const GameRoom = () => {
       socketService.registerHandler('game_message', (messageData) => {
         console.log('[GameRoom] 채팅 메시지 수신:', messageData);
         
-        // 채팅 메시지 추가
+        // 채팅 메시지 추가 - 중복 처리 방지
         const newMessage = {
-          id: Date.now().toString(),
+          id: messageData.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
           sender: messageData.sender,
           content: messageData.content,
           timestamp: messageData.timestamp || new Date().toISOString(),
           isSystem: messageData.isSystem || false
         };
         
-        setMessages(prev => [...prev, newMessage]);
+        // 중복 메시지 방지를 위해 ID 체크
+        setMessages(prev => {
+          if (prev.some(msg => msg.id === newMessage.id)) {
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
+      });
+
+      // newMessage 이벤트 리스너도 등록 (서버 구현에 따라 다를 수 있음)
+      socketService.registerHandler('newMessage', (messageData) => {
+        console.log('[GameRoom] 새 메시지 수신(newMessage):', messageData);
+        
+        // 채팅 메시지 추가 - 중복 처리 방지
+        const newMessage = {
+          id: messageData.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          sender: messageData.sender,
+          content: messageData.content,
+          timestamp: messageData.timestamp || new Date().toISOString(),
+          isSystem: messageData.isSystem || false
+        };
+        
+        // 중복 메시지 방지를 위해 ID 체크
+        setMessages(prev => {
+          if (prev.some(msg => msg.id === newMessage.id)) {
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
       });
       
       // game_action_result 이벤트 리스너 등록 (액션 결과)
@@ -786,19 +827,72 @@ const GameRoom = () => {
           gameStatus: 'finished'
         }));
       });
+
+      // 플레이어 참가 및 퇴장 이벤트 리스너 등록
+      socketService.registerHandler('playerJoined', (player) => {
+        console.log('[GameRoom] 플레이어 참가:', player);
+        addSystemMessage(`${player.name}님이 게임에 참가했습니다.`);
+        setPlayers(prev => [...prev.filter(p => p.id !== player.id), player]);
+      });
+
+      socketService.registerHandler('playerLeft', (data) => {
+        console.log('[GameRoom] 플레이어 퇴장:', data);
+        addSystemMessage(`${data.name || '플레이어'}님이 게임에서 나갔습니다.`);
+        setPlayers(prev => prev.filter(p => p.id !== data.id));
+      });
+      
+      // 이벤트 리스너를 모두 등록한 후 join_game 이벤트 발생
+      socketService.joinGame(gameId, gameState.playerName, (gameData) => {
+        console.log('[GameRoom] 게임 참가 완료:', gameData);
+        addSystemMessage(`${gameState.playerName}님이 게임에 참가했습니다.`);
+        
+        // 게임 데이터 설정
+        if (gameData.started) {
+          setGameStarted(true);
+          setCurrentRound(gameData.currentRound || 1);
+          setCurrentPhase(gameData.currentPhase || GAME_PHASES.ANIMAL_SELECTION);
+          
+          // 게임 정보 업데이트
+          if (gameData.players) {
+            setPlayers(gameData.players);
+            
+            // 자신의 플레이어 정보 찾기
+            const myPlayer = gameData.players.find(p => p.id === socket.id || p.name === gameState.playerName);
+            if (myPlayer) {
+              setGameState(prev => ({
+                ...prev,
+                animal: myPlayer.animal || prev.animal,
+                habitat: myPlayer.habitat || prev.habitat,
+                tier: myPlayer.tier || prev.tier,
+                location: myPlayer.location || prev.location
+              }));
+              
+              setSelectedLocation(myPlayer.location || null);
+            }
+          }
+        }
+      });
+      
+      // 컴포넌트 언마운트 시 이벤트 리스너 정리
+      return () => {
+        console.log('[GameRoom] 게임방 이벤트 리스너 정리');
+        
+        if (socketService) {
+          // 게임 관련 이벤트 리스너 제거
+          socketService.removeHandler('game_updated');
+          socketService.removeHandler('player_game_info');
+          socketService.removeHandler('game_message');
+          socketService.removeHandler('newMessage');
+          socketService.removeHandler('game_action_result');
+          socketService.removeHandler('game_over');
+          socketService.removeHandler('playerJoined');
+          socketService.removeHandler('playerLeft');
+          
+          // 게임 방 나가기
+          socketService.leaveGame();
+        }
+      };
     }
-    
-    // 컴포넌트 언마운트 시 이벤트 리스너 정리
-    return () => {
-      if (socketService) {
-        // 게임 관련 이벤트 리스너 제거
-        socketService.removeHandler('game_updated');
-        socketService.removeHandler('player_game_info');
-        socketService.removeHandler('game_message');
-        socketService.removeHandler('game_action_result');
-        socketService.removeHandler('game_over');
-      }
-    };
   }, [socketService, gameId, gameState.playerName, socket, addSystemMessage, gameStarted, changeGamePhase, setGameState]);
   
   // 로딩 중이면 로딩 화면 표시

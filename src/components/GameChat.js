@@ -29,25 +29,33 @@ const GameChat = ({ messages, onSendMessage }) => {
     return `${messages.length - MAX_MESSAGES}개의 이전 메시지가 숨겨져 있습니다.`;
   }, [messages]);
 
-  // 소켓 서비스 초기화
+  // 소켓 서비스 초기화 - 의존성 배열에서 socket만 사용하여 불필요한 재생성 방지
   useEffect(() => {
     if (socket) {
+      console.log('[GameChat] 소켓 서비스 초기화');
       const service = new GameSocketService(socket);
       setSocketService(service);
       
       // 새 메시지 이벤트 리스너
-      service.registerHandler('newMessage', (message) => {
+      const handleNewMessage = (message) => {
+        console.log('[GameChat] 새 메시지 수신:', message);
         if (typeof onSendMessage === 'function') {
           // 외부에서 메시지 처리하도록 콜백 호출
           onSendMessage(message.content, message);
         }
-      });
+      };
+      
+      // 이벤트 리스너 등록
+      service.registerHandler('newMessage', handleNewMessage);
+      service.registerHandler('game_message', handleNewMessage);
       
       return () => {
+        console.log('[GameChat] 이벤트 리스너 정리');
         service.removeHandler('newMessage');
+        service.removeHandler('game_message');
       };
     }
-  }, [socket, onSendMessage]);
+  }, [socket]);
 
   const handleMessageChange = (e) => {
     setMessage(e.target.value);
@@ -55,16 +63,46 @@ const GameChat = ({ messages, onSendMessage }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (message.trim()) {
-      if (socketService && gameId) {
+    if (!message.trim()) return;
+    
+    console.log('[GameChat] 메시지 전송 시도:', message, gameId);
+    
+    // 소켓이 연결되어 있고 서비스가 초기화되었는지 확인
+    if (socketService && gameId) {
+      try {
         // 소켓을 통해 서버로 메시지 전송
-        socketService.sendMessage(gameId, message);
+        const sent = socketService.sendMessage(gameId, message);
+        console.log('[GameChat] 메시지 전송 결과:', sent);
+        
+        if (!sent) {
+          // 소켓이 연결되어 있지 않은 경우 사용자에게 알림
+          console.error('[GameChat] 메시지 전송 실패: 서버 연결 없음');
+          
+          // 로컬 시스템 메시지 추가
+          if (typeof onSendMessage === 'function') {
+            onSendMessage('서버 연결이 끊어져 메시지를 보낼 수 없습니다. 페이지를 새로고침해 보세요.', {
+              id: Date.now().toString(),
+              sender: 'System',
+              content: '서버 연결이 끊어져 메시지를 보낼 수 없습니다. 페이지를 새로고침해 보세요.',
+              timestamp: new Date().toISOString(),
+              isSystem: true
+            });
+          }
+        }
+      } catch (error) {
+        console.error('[GameChat] 메시지 전송 중 오류:', error);
       }
-      
-      // 로컬 UI 업데이트를 위해 기존 콜백도 호출
-      onSendMessage(message);
-      setMessage('');
+    } else {
+      console.log('[GameChat] 로컬로 메시지 처리');
     }
+    
+    // 로컬 UI 업데이트를 위해 기존 콜백도 호출 (소켓 전송과 별개로)
+    if (typeof onSendMessage === 'function') {
+      onSendMessage(message);
+    }
+    
+    // 입력 필드 초기화
+    setMessage('');
   };
 
   // 새 메시지가 추가될 때마다 스크롤을 아래로 이동
@@ -90,10 +128,13 @@ const GameChat = ({ messages, onSendMessage }) => {
     }
   }, []);
 
+  // 연결 상태 확인
+  const isConnected = socketService?.isConnected() ?? false;
+
   return (
     <div className="game-chat">
       <div className="chat-header">
-        <h3>채팅</h3>
+        <h3>채팅 {isConnected ? '(연결됨)' : '(연결 끊김)'}</h3>
         <button 
           className="scroll-bottom-button" 
           onClick={scrollToBottom}
@@ -115,13 +156,16 @@ const GameChat = ({ messages, onSendMessage }) => {
         ) : (
           limitedMessages.map(msg => (
             <div 
-              key={msg.id} 
+              key={msg.id || `msg-${Date.now()}-${Math.random()}`} 
               className={`chat-message ${msg.isSystem ? 'system-message' : ''}`}
             >
               <div className="message-header">
-                <span className="message-sender">{msg.sender}</span>
+                <span className="message-sender">{msg.sender || '알 수 없음'}</span>
                 <span className="message-time">
-                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {msg.timestamp 
+                    ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                  }
                 </span>
               </div>
               <div className="message-content">{msg.content}</div>
@@ -136,10 +180,11 @@ const GameChat = ({ messages, onSendMessage }) => {
           type="text"
           value={message}
           onChange={handleMessageChange}
-          placeholder="메시지를 입력하세요..."
+          placeholder={isConnected ? "메시지를 입력하세요..." : "연결 중..."}
           className="chat-input"
+          disabled={!isConnected}
         />
-        <button type="submit" className="chat-send-button">
+        <button type="submit" className="chat-send-button" disabled={!isConnected}>
           전송
         </button>
       </form>

@@ -1,15 +1,18 @@
 import { io } from 'socket.io-client';
 
-
-const BACKEND_URL = 'https://muksa-qian.onrender.com'; // 네 서버 URL 그대로 유지
+// 백엔드 서버 URL
+const BACKEND_URL = 'https://muksa.onrender.com'; // 수정: URL 일관성 확보
 
 class GameSocketService {
   constructor(socket) {
     if (!socket) {
       this.socket = io(BACKEND_URL, {
-        transports: ['websocket'],  // 웹소켓 강제
+        transports: ['websocket', 'polling'],  // 폴링 백업 추가
         withCredentials: true,      // 크로스 도메인 지원
-        autoConnect: true           // 자동 연결
+        autoConnect: true,          // 자동 연결
+        reconnectionAttempts: 5,    // 재연결 시도 횟수
+        reconnectionDelay: 1000,    // 재연결 지연 시간(ms)
+        timeout: 20000              // 연결 타임아웃 늘림
       });
       console.log('새 소켓 연결 생성');
     } else {
@@ -78,7 +81,12 @@ class GameSocketService {
   // ✅ 채팅 메시지 전송
   sendMessage(gameId, content) {
     console.log('[메시지 전송]', gameId, content);
+    if (!this.socket.connected) {
+      console.error('[메시지 전송 실패] 소켓 연결이 없습니다');
+      return false;
+    }
     this.socket.emit('sendMessage', { gameId, content });
+    return true;
   }
 
   // ✅ 게임 나가기

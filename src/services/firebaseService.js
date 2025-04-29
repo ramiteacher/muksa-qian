@@ -1,5 +1,6 @@
 import { database } from '../firebase';  // 네 firebase.js에서 export한 database
-import { ref, push, set, get, child } from 'firebase/database';
+import { ref, push, set, get, child, remove } from 'firebase/database';
+
 
 // ✅ 방 생성
 export async function createGameRoomInFirebase(gameName, playerName) {

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GameContext from '../contexts/GameContext';
 import { createGameRoomInFirebase, fetchGameRoomsFromFirebase } from '../services/firebaseService';
-import { database, ref, remove } from '../firebase';  // ✅ 정상적으로 사용 가능
+import { database } from '../firebase';           // database는 너가 만든 firebase.js에서
+import { ref, remove } from 'firebase/database';   // ref, remove는 firebase SDK에서 직접
 
 import '../styles/GameLobby.css'; // 스타일도 수정할 예정
 
@@ -39,7 +40,7 @@ const GameLobby = () => {
         }));
 
       
-        setRooms(roomList);
+        setRooms(filteredRooms.filter(room => room !== null)); 
       } catch (error) {
         console.error('방 목록 불러오기 오류:', error);
       } finally {

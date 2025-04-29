@@ -10,7 +10,15 @@ export async function createGameRoomInFirebase(gameName, playerName) {
     const roomData = {
       name: gameName,
       host: playerName,
-      players: [],
+      players: [
+        {
+          id: 'host', // 나중엔 유저 고유 ID로 대체
+          name: playerName,
+          isHost: true,
+          isReady: false
+        }
+      ],
+      
       createdAt: Date.now()
     };
     await set(newRoomRef, roomData);                 // 그 새 키에 데이터 저장

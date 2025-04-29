@@ -2,7 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GameContext from '../contexts/GameContext';
 import { createGameRoomInFirebase, fetchGameRoomsFromFirebase } from '../services/firebaseService';
-import { database, ref, remove } from '../firebase';  // ✅ 추가
+import { database, ref, remove } from '../firebase';  // ✅ 정상적으로 사용 가능
+
 import '../styles/GameLobby.css'; // 스타일도 수정할 예정
 
 const MAX_PLAYERS = 13; // 최대 참가자 수

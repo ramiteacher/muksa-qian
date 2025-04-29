@@ -7,7 +7,7 @@ class GameSocketService {
   constructor(socket) {
     if (!socket) {
       this.socket = io(BACKEND_URL, {
-        transports: ['websocket', 'polling'],  // 폴링 백업 추가
+        transports: ['polling'],  // 폴링 백업 추가
         withCredentials: true,      // 크로스 도메인 지원
         autoConnect: true,          // 자동 연결
         reconnectionAttempts: 5,    // 재연결 시도 횟수

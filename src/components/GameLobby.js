@@ -2,8 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GameContext from '../contexts/GameContext';
 import { createGameRoomInFirebase } from '../services/firebaseService';
-import { database } from '../firebase';  // database는 가져오고
-import { ref, onValue, remove } from 'firebase/database'; // 리스너 추가!
+import { database } from '../firebase';
+import { ref, onValue, remove } from 'firebase/database';
 
 import '../styles/GameLobby.css';
 
@@ -28,7 +28,6 @@ const GameLobby = () => {
           ...room
         }));
 
-        // 0명짜리 방 삭제 처리
         const filteredRooms = await Promise.all(roomList.map(async (room) => {
           const currentPlayers = room.players ? room.players.length : 0;
           if (currentPlayers === 0) {
@@ -38,12 +37,12 @@ const GameLobby = () => {
               return null;
             } catch (error) {
               console.error('방 삭제 실패:', error);
+              return room; // 삭제 실패한 건 유지
             }
           }
           return room;
         }));
 
-        // 필터링된 방만 세팅
         setRooms(filteredRooms.filter(r => r !== null));
       } else {
         setRooms([]);
@@ -52,7 +51,7 @@ const GameLobby = () => {
       setLoading(false);
     });
 
-    return () => unsubscribe(); // 🔥 리스너 해제 (메모리 누수 방지)
+    return () => unsubscribe();
   }, []);
 
   const handleCreateRoom = async () => {
@@ -97,8 +96,8 @@ const GameLobby = () => {
               const isFull = currentPlayers >= MAX_PLAYERS;
 
               return (
-                <div 
-                  key={room.id} 
+                <div
+                  key={room.id}
                   className={`room-card ${isFull ? 'full' : ''}`}
                   onClick={() => !isFull && handleJoinRoom(room.id)}
                   style={{ cursor: isFull ? 'not-allowed' : 'pointer' }}
